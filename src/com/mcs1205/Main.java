@@ -1,10 +1,9 @@
-package com.kasunperera;
+package com.mcs1205;
 
-import com.kasunperera.parser.ast.ASTNode;
-import com.kasunperera.syntax.Grammar;
-import com.kasunperera.lexer.Lexeme;
-import com.kasunperera.lexer.Lexer;
-import com.kasunperera.parser.Parser;
+import com.mcs1205.parser.ast.ASTNode;
+import com.mcs1205.syntax.Grammar;
+import com.mcs1205.lexer.Lexer;
+import com.mcs1205.parser.Parser;
 
 public class Main {
 
@@ -19,7 +18,7 @@ public class Main {
                             "     float c = 1 + 10;  "  +
                             "     for(int b = 0; b < 5; b++)  "  +
                             "     {  "  +
-                            "       a = a + c;  "  +
+                            "       a = a + c + 10;  "  +
                             "     }  "  +
                             "   }  ";
 

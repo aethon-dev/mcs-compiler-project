@@ -1,8 +1,8 @@
-package com.kasunperera.lexer;
+package com.mcs1205.lexer;
 
-import com.kasunperera.lexer.exception.InvalidSyntaxException;
-import com.kasunperera.syntax.Symbol;
-import com.kasunperera.syntax.SymbolType;
+import com.mcs1205.lexer.exception.InvalidSyntaxException;
+import com.mcs1205.syntax.Symbol;
+import com.mcs1205.syntax.SymbolType;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -50,7 +50,7 @@ public class Lexer {
 
     public void print() {
         for (Lexeme lexeme : lexemes) {
-            System.out.println(lexeme.getToken() + " : " + lexeme.getSymbolType().toString());
+            System.out.printf("%-6s : %s\n", lexeme.getToken(), lexeme.getSymbolType().toString());
         }
     }
 }

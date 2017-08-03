@@ -1,4 +1,4 @@
-package com.kasunperera.syntax;
+package com.mcs1205.syntax;
 
 /**
  * Created by kasunp on 7/23/17.

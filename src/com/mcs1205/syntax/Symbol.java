@@ -1,4 +1,4 @@
-package com.kasunperera.syntax;
+package com.mcs1205.syntax;
 
 import java.util.regex.Pattern;
 

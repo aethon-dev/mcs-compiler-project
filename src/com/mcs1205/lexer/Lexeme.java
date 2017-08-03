@@ -1,6 +1,6 @@
-package com.kasunperera.lexer;
+package com.mcs1205.lexer;
 
-import com.kasunperera.syntax.SymbolType;
+import com.mcs1205.syntax.SymbolType;
 
 /**
  * Created by kasunp on 7/23/17.

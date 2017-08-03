@@ -1,9 +1,9 @@
-package com.kasunperera.parser;
+package com.mcs1205.parser;
 
-import com.kasunperera.parser.ast.ASTNode;
-import com.kasunperera.parser.ast.ASTNodeType;
-import com.kasunperera.syntax.SymbolType;
-import com.kasunperera.lexer.Lexeme;
+import com.mcs1205.parser.ast.ASTNode;
+import com.mcs1205.parser.ast.ASTNodeType;
+import com.mcs1205.syntax.SymbolType;
+import com.mcs1205.lexer.Lexeme;
 
 import java.util.ArrayList;
 import java.util.List;

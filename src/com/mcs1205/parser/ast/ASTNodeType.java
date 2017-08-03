@@ -1,4 +1,4 @@
-package com.kasunperera.parser.ast;
+package com.mcs1205.parser.ast;
 
 /**
  * Created by kasunp on 8/1/17.

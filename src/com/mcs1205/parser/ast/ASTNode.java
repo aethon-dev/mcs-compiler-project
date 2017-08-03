@@ -1,6 +1,6 @@
-package com.kasunperera.parser.ast;
+package com.mcs1205.parser.ast;
 
-import com.kasunperera.lexer.Lexeme;
+import com.mcs1205.lexer.Lexeme;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class ASTNode {
 
     @Override
     public String toString() {
-        return (data != null ? (data.getToken()) : this.astNodeType.toString());
+        return (data != null ? (data.getToken()) : "<" + this.astNodeType.toString()+ ">");
     }
 
     public void print() {

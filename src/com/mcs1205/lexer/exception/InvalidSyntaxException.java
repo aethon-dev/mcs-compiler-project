@@ -1,4 +1,4 @@
-package com.kasunperera.lexer.exception;
+package com.mcs1205.lexer.exception;
 
 /**
  * Created by kasunp on 8/1/17.

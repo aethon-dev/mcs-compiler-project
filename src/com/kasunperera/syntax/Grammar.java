@@ -1,4 +1,4 @@
-package com.kasunperera.grammar;
+package com.kasunperera.syntax;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -33,7 +33,8 @@ public class Grammar {
         add("\\)", SymbolType.BRACKET_CLOSE);
         add("\\+", SymbolType.PLUS);
         add("<", SymbolType.LESS_THAN);
-        add("[0-9]+", SymbolType.NUMBER);
+        add("[0-9]*\\.[0-9]+", SymbolType.FLOAT_VALUE);
+        add("[0-9]+", SymbolType.INT_VALUE);
         add("[a-zA-Z][a-zA-Z0-9_]*", SymbolType.VARIABLE);
         add("\\s", SymbolType.WHITESPACE);
     }

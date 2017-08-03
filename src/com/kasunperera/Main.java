@@ -1,7 +1,7 @@
 package com.kasunperera;
 
-import com.kasunperera.grammar.Grammar;
-import com.kasunperera.grammar.SymbolType;
+import com.kasunperera.parser.ast.ASTNode;
+import com.kasunperera.syntax.Grammar;
 import com.kasunperera.lexer.Lexeme;
 import com.kasunperera.lexer.Lexer;
 import com.kasunperera.parser.Parser;
@@ -14,26 +14,31 @@ public class Main {
         Lexer lexer = new Lexer();
         Parser parser = new Parser();
 
-        String program =    "   Start{  "  +
-                            "   int a = 10;  "  +
-                            "   float c = 1 + 10 + 20;  "  +
-                            "   for(int b = 0; b < 5; b++)  "  +
-                            "   {  "  +
-                            "   a = a + c;  "  +
-                            "   }  "  +
-                            "  }  ";
+        String program =    "   Start {  "  +
+                            "     int a = 10.2;  "  +
+                            "     float c = 1 + 10;  "  +
+                            "     for(int b = 0; b < 5; b++)  "  +
+                            "     {  "  +
+                            "       a = a + c;  "  +
+                            "     }  "  +
+                            "   }  ";
 
         try {
             lexer.analyze(grammar.getSymbols(), program);
-
-            for (Lexeme lexeme : lexer.getLexemes()) {
-                System.out.println(lexeme.getToken() + " : " + lexeme.getSymbolType().toString());
-            }
+            System.out.println("List of tokens");
+            System.out.println("------------------");
+            lexer.print();
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
-        parser.parse(lexer.getLexemes());
+        ASTNode astRootNode = parser.parse(lexer.getLexemes());
+        if (astRootNode != null) {
+            System.out.println("\n");
+            System.out.println("Parse Tree");
+            System.out.println("------------------");
+            astRootNode.print();
+        }
     }
 }

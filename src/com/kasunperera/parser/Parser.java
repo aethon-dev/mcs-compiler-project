@@ -1,6 +1,8 @@
 package com.kasunperera.parser;
 
-import com.kasunperera.grammar.SymbolType;
+import com.kasunperera.parser.ast.ASTNode;
+import com.kasunperera.parser.ast.ASTNodeType;
+import com.kasunperera.syntax.SymbolType;
 import com.kasunperera.lexer.Lexeme;
 
 import java.util.ArrayList;
@@ -16,17 +18,19 @@ public class Parser {
     private int nextIndex;
     
 
-    public void parse(List<Lexeme> lexemes) {
+    public ASTNode parse(List<Lexeme> lexemes) {
         this.lexemes = new ArrayList<>(lexemes);
         nextIndex = 0;
 
         lookAhead();
 
         try {
-            matchProgram();
+            return matchProgram();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
     private void lookAhead() {
@@ -36,138 +40,188 @@ public class Parser {
         }
     }
 
-    private void matchTerminal(SymbolType target) throws Exception{
+
+    //===================================================================
+    //                          Production Rules
+    //===================================================================
+    private ASTNode matchTerminal(SymbolType target) throws Exception{
         if (nextLexeme.getSymbolType() != target) {
             throw new Exception("Illegal: " + nextLexeme.getToken());
         }
 
+        ASTNode terminalNode = new ASTNode(ASTNodeType.TERMINAL, nextLexeme);
+
         lookAhead();
+
+        return terminalNode;
     }
 
-    private void matchProgram() throws Exception {
+    private ASTNode matchProgram() throws Exception {
         matchTerminal(SymbolType.START);
         matchTerminal(SymbolType.CURLY_BRACE_OPEN);
-        matchStatementList();
+        ASTNode stmtListNode = matchStatementList();
         matchTerminal(SymbolType.CURLY_BRACE_CLOSE);
+
+        return new ASTNode(ASTNodeType.PROGRAM, null, stmtListNode);
     }
 
-    private void matchStatementList() throws Exception{
-        matchStatement();
+    private ASTNode matchStatementList() throws Exception{
+        ASTNode stmtNode = matchStatement();
         if (nextLexeme.getSymbolType() != SymbolType.CURLY_BRACE_CLOSE) {
-            matchStatementList();
+            ASTNode stmtListNode = matchStatementList();
+            return new ASTNode(ASTNodeType.STATEMENT_LIST, null, stmtNode, stmtListNode);
         }
+
+        return new ASTNode(ASTNodeType.STATEMENT_LIST, null, stmtNode);
     }
 
-    private void matchStatement() throws Exception{
+    private ASTNode matchStatement() throws Exception {
+        ASTNode node;
         if (nextLexeme.getSymbolType() == SymbolType.FOR) {
-            matchForLoop();
+            node = matchForLoop();
         }
         else {
-            matchTerminatedStatement();
+            node = matchTerminatedStatement();
         }
+
+        return new ASTNode(ASTNodeType.STATEMENT, null, node);
     }
 
-    private void matchForLoop() throws Exception{
+    private ASTNode matchForLoop() throws Exception{
         matchTerminal(SymbolType.FOR);
         matchTerminal(SymbolType.BRACKET_OPEN);
+        ASTNode exprNode1;
         if (nextLexeme.getSymbolType() == SymbolType.INT || nextLexeme.getSymbolType() == SymbolType.FLOAT) {
-            matchDeclaration();
+            exprNode1 = matchDeclaration();
         }
         else {
-            matchVariable();
-            matchAssignmentExpression();
+            ASTNode varNode = matchVariable();
+            ASTNode asgnExprNode = matchAssignmentExpression();
+            exprNode1 = new ASTNode(ASTNodeType.EXPRESSION, null, varNode, asgnExprNode);
         }
         matchTerminal(SymbolType.SEMICOLON);
-        matchBooleanExpression();
+        ASTNode exprNode2 = matchBooleanExpression();
         matchTerminal(SymbolType.SEMICOLON);
-        matchExpression();
+        ASTNode exprNode3 = matchExpression();
         matchTerminal(SymbolType.BRACKET_CLOSE);
         matchTerminal(SymbolType.CURLY_BRACE_OPEN);
-        matchStatementList();
+        ASTNode stmtListNode = matchStatementList();
         matchTerminal(SymbolType.CURLY_BRACE_CLOSE);
+
+        return new ASTNode(ASTNodeType.FOR_LOOP, null, exprNode1, exprNode2, exprNode3, stmtListNode);
     }
 
-    private void matchTerminatedStatement() throws Exception {
+    private ASTNode matchTerminatedStatement() throws Exception {
+        ASTNode node;
         if (nextLexeme.getSymbolType() == SymbolType.INT || nextLexeme.getSymbolType() == SymbolType.FLOAT) {
-            matchDeclaration();
+            node = matchDeclaration();
         }
         else {
-            matchExpression();
+            node = matchExpression();
         }
 
         matchTerminal(SymbolType.SEMICOLON);
+
+        return new ASTNode(ASTNodeType.TERMINATED_STATEMENT, null, node);
     }
 
-    private void matchExpression() throws Exception {
-        matchVariable();
+    private ASTNode matchExpression() throws Exception {
+        ASTNode varNode = matchVariable();
         if (nextLexeme.getSymbolType() == SymbolType.INCREMENT) {
-            matchIncrementExpression();
+            ASTNode incrNode = matchIncrementExpression();
+            return new ASTNode(ASTNodeType.EXPRESSION, null, varNode, incrNode);
         }
         else {
-            matchAssignmentExpression();
+            ASTNode asgnExprNode = matchAssignmentExpression();
+            return new ASTNode(ASTNodeType.EXPRESSION, null, varNode, asgnExprNode);
         }
     }
 
-    private void matchVariable() throws Exception {
-        matchTerminal(SymbolType.VARIABLE);
+    private ASTNode matchVariable() throws Exception {
+        return matchTerminal(SymbolType.VARIABLE);
     }
 
-    private void matchBooleanExpression() throws Exception {
-        matchTerm();
-        matchTerminal(SymbolType.LESS_THAN);
-        matchTerm();
+    private ASTNode matchBooleanExpression() throws Exception {
+        ASTNode termNode1 = matchTerm();
+        ASTNode lessThanNode = matchTerminal(SymbolType.LESS_THAN);
+        ASTNode termNode2 = matchTerm();
+
+        return new ASTNode(ASTNodeType.BOOLEAN_EXPRESSION, null, termNode1, lessThanNode, termNode2);
     }
 
-    private void matchDeclaration() throws Exception {
-        matchDataType();
-        matchVariable();
+    private ASTNode matchDeclaration() throws Exception {
+        ASTNode dtypeNode = matchDataType();
+        ASTNode varNode = matchVariable();
         if (nextLexeme.getSymbolType() != SymbolType.SEMICOLON) {
-            matchAssignmentExpression();
+            ASTNode asgnExprNode = matchAssignmentExpression();
+            return new ASTNode(ASTNodeType.DECLARATION, null, dtypeNode, varNode, asgnExprNode);
         }
+
+        return new ASTNode(ASTNodeType.DECLARATION, null, dtypeNode, varNode);
     }
 
-    private void matchDataType() throws Exception {
+    private ASTNode matchDataType() throws Exception {
         if (nextLexeme.getSymbolType() == SymbolType.INT) {
-            matchTerminal(SymbolType.INT);
+            return matchTerminal(SymbolType.INT);
         }
         else {
-            matchTerminal(SymbolType.FLOAT);
+            return matchTerminal(SymbolType.FLOAT);
         }
     }
 
-    private void matchAssignmentExpression() throws Exception {
-        matchTerminal(SymbolType.ASSIGNMENT);
-        matchAlgebraicExpression();
+    private ASTNode matchAssignmentExpression() throws Exception {
+        ASTNode asgnNode = matchTerminal(SymbolType.ASSIGNMENT);
+        ASTNode algebraicExprNode = matchAlgebraicExpression();
+
+        return new ASTNode(ASTNodeType.ASSIGNMENT_EXPRESSION, null, asgnNode, algebraicExprNode);
     }
 
-    private void matchIncrementExpression() throws Exception {
-        matchTerminal(SymbolType.INCREMENT);
+    private ASTNode matchIncrementExpression() throws Exception {
+        return matchTerminal(SymbolType.INCREMENT);
     }
 
-    private void matchAlgebraicExpression() throws Exception {
-        matchTerm();
+    private ASTNode matchAlgebraicExpression() throws Exception {
+        ASTNode termNode = matchTerm();
         if (nextLexeme.getSymbolType() == SymbolType.PLUS) {
-            matchArithmeticExpression();
+            ASTNode arithmeticExprNode = matchArithmeticExpression();
+            return new ASTNode(ASTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, arithmeticExprNode);
         }
         else if (nextLexeme.getSymbolType() == SymbolType.LESS_THAN) {
-            matchBooleanExpression();
+            ASTNode booleanExprNode = matchBooleanExpression();
+            return new ASTNode(ASTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, booleanExprNode);
         }
+
+        return termNode;
     }
 
-    private void matchTerm() throws Exception {
+    private ASTNode matchTerm() throws Exception {
         if (nextLexeme.getSymbolType() == SymbolType.VARIABLE) {
-            matchVariable();
+            return matchVariable();
         }
         else {
-            matchTerminal(SymbolType.NUMBER);
+            return matchNumber();
         }
     }
 
-    private void matchArithmeticExpression() throws Exception {
-        matchTerminal(SymbolType.PLUS);
-        matchTerm();
+    private ASTNode matchArithmeticExpression() throws Exception {
+        ASTNode opNode = matchTerminal(SymbolType.PLUS);
+        ASTNode termNode = matchTerm();
         if (nextLexeme.getSymbolType() == SymbolType.PLUS) {
-            matchArithmeticExpression();
+            ASTNode arithmeticExprNode = matchArithmeticExpression();
+            return new ASTNode(ASTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode, arithmeticExprNode);
         }
+
+        return new ASTNode(ASTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode);
+    }
+
+    private ASTNode matchNumber() throws Exception {
+        if (nextLexeme.getSymbolType() == SymbolType.INT_VALUE) {
+            return matchTerminal(SymbolType.INT_VALUE);
+        }
+        else if (nextLexeme.getSymbolType() == SymbolType.FLOAT_VALUE) {
+            return matchTerminal(SymbolType.FLOAT_VALUE);
+        }
+
+        return null;
     }
 }

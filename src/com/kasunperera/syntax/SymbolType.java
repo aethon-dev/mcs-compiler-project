@@ -1,4 +1,4 @@
-package com.kasunperera.grammar;
+package com.kasunperera.syntax;
 
 /**
  * Created by kasunp on 7/23/17.
@@ -17,7 +17,8 @@ public enum SymbolType {
     BRACKET_CLOSE,
     PLUS,
     LESS_THAN,
-    NUMBER,
+    INT_VALUE,
+    FLOAT_VALUE,
     VARIABLE,
     WHITESPACE
 }

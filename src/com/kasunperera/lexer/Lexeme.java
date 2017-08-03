@@ -1,6 +1,6 @@
 package com.kasunperera.lexer;
 
-import com.kasunperera.grammar.SymbolType;
+import com.kasunperera.syntax.SymbolType;
 
 /**
  * Created by kasunp on 7/23/17.

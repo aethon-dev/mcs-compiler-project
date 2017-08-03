@@ -1,11 +1,11 @@
 package com.kasunperera.lexer;
 
-import com.kasunperera.grammar.Symbol;
-import com.kasunperera.grammar.SymbolType;
+import com.kasunperera.lexer.exception.InvalidSyntaxException;
+import com.kasunperera.syntax.Symbol;
+import com.kasunperera.syntax.SymbolType;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by kasunp on 7/23/17.
@@ -40,11 +40,17 @@ public class Lexer {
                 }
             }
 
-            if (!match) throw new Exception("Unexpected character in input: " + source);
+            if (!match) throw new InvalidSyntaxException("Unexpected character in input: " + source);
         }
     }
 
     public ArrayList<Lexeme> getLexemes() {
         return lexemes;
+    }
+
+    public void print() {
+        for (Lexeme lexeme : lexemes) {
+            System.out.println(lexeme.getToken() + " : " + lexeme.getSymbolType().toString());
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.mcs1205.lexer;
 
 import com.mcs1205.lexer.exception.InvalidSyntaxException;
+import com.mcs1205.syntax.Grammar;
 import com.mcs1205.syntax.Symbol;
 import com.mcs1205.syntax.SymbolType;
 
@@ -18,7 +19,8 @@ public class Lexer {
         this.lexemes = new ArrayList<>();
     }
 
-    public void analyze(ArrayList<Symbol> symbols, String str) throws Exception {
+    public void analyze(Grammar grammar, String str) throws Exception {
+        ArrayList<Symbol> symbols = grammar.getSymbols();
         String source = new String(str);
         lexemes.clear();
 

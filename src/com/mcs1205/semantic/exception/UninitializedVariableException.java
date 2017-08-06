@@ -1,4 +1,4 @@
-package com.mcs1205.parser.exception;
+package com.mcs1205.semantic.exception;
 
 /**
  * Created by kasunp on 8/1/17.

@@ -1,7 +1,7 @@
 package com.mcs1205.parser;
 
-import com.mcs1205.parser.ast.ASTNode;
-import com.mcs1205.parser.ast.ASTNodeType;
+import com.mcs1205.parser.parsetree.PTNode;
+import com.mcs1205.parser.parsetree.PTNodeType;
 import com.mcs1205.syntax.SymbolType;
 import com.mcs1205.lexer.Lexeme;
 
@@ -18,7 +18,7 @@ public class Parser {
     private int nextIndex;
     
 
-    public ASTNode parse(List<Lexeme> lexemes) {
+    public PTNode parse(List<Lexeme> lexemes) {
         this.lexemes = new ArrayList<>(lexemes);
         nextIndex = 0;
 
@@ -44,39 +44,38 @@ public class Parser {
     //===================================================================
     //                          Production Rules
     //===================================================================
-    private ASTNode matchTerminal(SymbolType target) throws Exception{
+    private PTNode matchTerminal(SymbolType target) throws Exception{
         if (nextLexeme.getSymbolType() != target) {
             throw new Exception("Illegal: " + nextLexeme.getToken());
         }
 
-        ASTNode terminalNode = new ASTNode(ASTNodeType.TERMINAL, nextLexeme);
-
+        PTNode terminalNode = new PTNode(PTNodeType.TERMINAL, nextLexeme);
         lookAhead();
 
         return terminalNode;
     }
 
-    private ASTNode matchProgram() throws Exception {
+    private PTNode matchProgram() throws Exception {
         matchTerminal(SymbolType.START);
         matchTerminal(SymbolType.CURLY_BRACE_OPEN);
-        ASTNode stmtListNode = matchStatementList();
+        PTNode stmtListNode = matchStatementList();
         matchTerminal(SymbolType.CURLY_BRACE_CLOSE);
 
-        return new ASTNode(ASTNodeType.PROGRAM, null, stmtListNode);
+        return new PTNode(PTNodeType.PROGRAM, null, stmtListNode);
     }
 
-    private ASTNode matchStatementList() throws Exception{
-        ASTNode stmtNode = matchStatement();
+    private PTNode matchStatementList() throws Exception{
+        PTNode stmtNode = matchStatement();
         if (nextLexeme.getSymbolType() != SymbolType.CURLY_BRACE_CLOSE) {
-            ASTNode stmtListNode = matchStatementList();
-            return new ASTNode(ASTNodeType.STATEMENT_LIST, null, stmtNode, stmtListNode);
+            PTNode stmtListNode = matchStatementList();
+            return new PTNode(PTNodeType.STATEMENT_LIST, null, stmtNode, stmtListNode);
         }
 
-        return new ASTNode(ASTNodeType.STATEMENT_LIST, null, stmtNode);
+        return new PTNode(PTNodeType.STATEMENT_LIST, null, stmtNode);
     }
 
-    private ASTNode matchStatement() throws Exception {
-        ASTNode node;
+    private PTNode matchStatement() throws Exception {
+        PTNode node;
         if (nextLexeme.getSymbolType() == SymbolType.FOR) {
             node = matchForLoop();
         }
@@ -84,35 +83,35 @@ public class Parser {
             node = matchTerminatedStatement();
         }
 
-        return new ASTNode(ASTNodeType.STATEMENT, null, node);
+        return new PTNode(PTNodeType.STATEMENT, null, node);
     }
 
-    private ASTNode matchForLoop() throws Exception{
+    private PTNode matchForLoop() throws Exception{
         matchTerminal(SymbolType.FOR);
         matchTerminal(SymbolType.BRACKET_OPEN);
-        ASTNode exprNode1;
+        PTNode exprNode1;
         if (nextLexeme.getSymbolType() == SymbolType.INT || nextLexeme.getSymbolType() == SymbolType.FLOAT) {
             exprNode1 = matchDeclaration();
         }
         else {
-            ASTNode varNode = matchVariable();
-            ASTNode asgnExprNode = matchAssignmentExpression();
-            exprNode1 = new ASTNode(ASTNodeType.EXPRESSION, null, varNode, asgnExprNode);
+            PTNode varNode = matchVariable();
+            PTNode asgnExprNode = matchAssignmentExpression();
+            exprNode1 = new PTNode(PTNodeType.EXPRESSION, null, varNode, asgnExprNode);
         }
         matchTerminal(SymbolType.SEMICOLON);
-        ASTNode exprNode2 = matchBooleanExpression();
+        PTNode exprNode2 = matchBooleanExpression();
         matchTerminal(SymbolType.SEMICOLON);
-        ASTNode exprNode3 = matchExpression();
+        PTNode exprNode3 = matchExpression();
         matchTerminal(SymbolType.BRACKET_CLOSE);
         matchTerminal(SymbolType.CURLY_BRACE_OPEN);
-        ASTNode stmtListNode = matchStatementList();
+        PTNode stmtListNode = matchStatementList();
         matchTerminal(SymbolType.CURLY_BRACE_CLOSE);
 
-        return new ASTNode(ASTNodeType.FOR_LOOP, null, exprNode1, exprNode2, exprNode3, stmtListNode);
+        return new PTNode(PTNodeType.FOR_LOOP, null, exprNode1, exprNode2, exprNode3, stmtListNode);
     }
 
-    private ASTNode matchTerminatedStatement() throws Exception {
-        ASTNode node;
+    private PTNode matchTerminatedStatement() throws Exception {
+        PTNode node;
         if (nextLexeme.getSymbolType() == SymbolType.INT || nextLexeme.getSymbolType() == SymbolType.FLOAT) {
             node = matchDeclaration();
         }
@@ -122,45 +121,45 @@ public class Parser {
 
         matchTerminal(SymbolType.SEMICOLON);
 
-        return new ASTNode(ASTNodeType.TERMINATED_STATEMENT, null, node);
+        return new PTNode(PTNodeType.TERMINATED_STATEMENT, null, node);
     }
 
-    private ASTNode matchExpression() throws Exception {
-        ASTNode varNode = matchVariable();
+    private PTNode matchExpression() throws Exception {
+        PTNode varNode = matchVariable();
         if (nextLexeme.getSymbolType() == SymbolType.INCREMENT) {
-            ASTNode incrNode = matchIncrementExpression();
-            return new ASTNode(ASTNodeType.EXPRESSION, null, varNode, incrNode);
+            PTNode incrNode = matchIncrementExpression();
+            return new PTNode(PTNodeType.EXPRESSION, null, varNode, incrNode);
         }
         else {
-            ASTNode asgnExprNode = matchAssignmentExpression();
-            return new ASTNode(ASTNodeType.EXPRESSION, null, varNode, asgnExprNode);
+            PTNode asgnExprNode = matchAssignmentExpression();
+            return new PTNode(PTNodeType.EXPRESSION, null, varNode, asgnExprNode);
         }
     }
 
-    private ASTNode matchVariable() throws Exception {
+    private PTNode matchVariable() throws Exception {
         return matchTerminal(SymbolType.VARIABLE);
     }
 
-    private ASTNode matchBooleanExpression() throws Exception {
-        ASTNode termNode1 = matchTerm();
-        ASTNode lessThanNode = matchTerminal(SymbolType.LESS_THAN);
-        ASTNode termNode2 = matchTerm();
+    private PTNode matchBooleanExpression() throws Exception {
+        PTNode termNode1 = matchTerm();
+        PTNode lessThanNode = matchTerminal(SymbolType.LESS_THAN);
+        PTNode termNode2 = matchTerm();
 
-        return new ASTNode(ASTNodeType.BOOLEAN_EXPRESSION, null, termNode1, lessThanNode, termNode2);
+        return new PTNode(PTNodeType.BOOLEAN_EXPRESSION, null, termNode1, lessThanNode, termNode2);
     }
 
-    private ASTNode matchDeclaration() throws Exception {
-        ASTNode dtypeNode = matchDataType();
-        ASTNode varNode = matchVariable();
+    private PTNode matchDeclaration() throws Exception {
+        PTNode dtypeNode = matchDataType();
+        PTNode varNode = matchVariable();
         if (nextLexeme.getSymbolType() != SymbolType.SEMICOLON) {
-            ASTNode asgnExprNode = matchAssignmentExpression();
-            return new ASTNode(ASTNodeType.DECLARATION, null, dtypeNode, varNode, asgnExprNode);
+            PTNode asgnExprNode = matchAssignmentExpression();
+            return new PTNode(PTNodeType.DECLARATION, null, dtypeNode, varNode, asgnExprNode);
         }
 
-        return new ASTNode(ASTNodeType.DECLARATION, null, dtypeNode, varNode);
+        return new PTNode(PTNodeType.DECLARATION, null, dtypeNode, varNode);
     }
 
-    private ASTNode matchDataType() throws Exception {
+    private PTNode matchDataType() throws Exception {
         if (nextLexeme.getSymbolType() == SymbolType.INT) {
             return matchTerminal(SymbolType.INT);
         }
@@ -169,32 +168,32 @@ public class Parser {
         }
     }
 
-    private ASTNode matchAssignmentExpression() throws Exception {
-        ASTNode asgnNode = matchTerminal(SymbolType.ASSIGNMENT);
-        ASTNode algebraicExprNode = matchAlgebraicExpression();
+    private PTNode matchAssignmentExpression() throws Exception {
+        PTNode asgnNode = matchTerminal(SymbolType.ASSIGNMENT);
+        PTNode algebraicExprNode = matchAlgebraicExpression();
 
-        return new ASTNode(ASTNodeType.ASSIGNMENT_EXPRESSION, null, asgnNode, algebraicExprNode);
+        return new PTNode(PTNodeType.ASSIGNMENT_EXPRESSION, null, asgnNode, algebraicExprNode);
     }
 
-    private ASTNode matchIncrementExpression() throws Exception {
+    private PTNode matchIncrementExpression() throws Exception {
         return matchTerminal(SymbolType.INCREMENT);
     }
 
-    private ASTNode matchAlgebraicExpression() throws Exception {
-        ASTNode termNode = matchTerm();
+    private PTNode matchAlgebraicExpression() throws Exception {
+        PTNode termNode = matchTerm();
         if (nextLexeme.getSymbolType() == SymbolType.PLUS) {
-            ASTNode arithmeticExprNode = matchArithmeticExpression();
-            return new ASTNode(ASTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, arithmeticExprNode);
+            PTNode arithmeticExprNode = matchArithmeticExpression();
+            return new PTNode(PTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, arithmeticExprNode);
         }
         else if (nextLexeme.getSymbolType() == SymbolType.LESS_THAN) {
-            ASTNode booleanExprNode = matchBooleanExpression();
-            return new ASTNode(ASTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, booleanExprNode);
+            PTNode booleanExprNode = matchBooleanExpression();
+            return new PTNode(PTNodeType.ALGEBRAIC_EXPRESSION, null, termNode, booleanExprNode);
         }
 
         return termNode;
     }
 
-    private ASTNode matchTerm() throws Exception {
+    private PTNode matchTerm() throws Exception {
         if (nextLexeme.getSymbolType() == SymbolType.VARIABLE) {
             return matchVariable();
         }
@@ -203,18 +202,18 @@ public class Parser {
         }
     }
 
-    private ASTNode matchArithmeticExpression() throws Exception {
-        ASTNode opNode = matchTerminal(SymbolType.PLUS);
-        ASTNode termNode = matchTerm();
+    private PTNode matchArithmeticExpression() throws Exception {
+        PTNode opNode = matchTerminal(SymbolType.PLUS);
+        PTNode termNode = matchTerm();
         if (nextLexeme.getSymbolType() == SymbolType.PLUS) {
-            ASTNode arithmeticExprNode = matchArithmeticExpression();
-            return new ASTNode(ASTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode, arithmeticExprNode);
+            PTNode arithmeticExprNode = matchArithmeticExpression();
+            return new PTNode(PTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode, arithmeticExprNode);
         }
 
-        return new ASTNode(ASTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode);
+        return new PTNode(PTNodeType.ARITHMETIC_EXPRESSION, null, opNode, termNode);
     }
 
-    private ASTNode matchNumber() throws Exception {
+    private PTNode matchNumber() throws Exception {
         if (nextLexeme.getSymbolType() == SymbolType.INT_VALUE) {
             return matchTerminal(SymbolType.INT_VALUE);
         }

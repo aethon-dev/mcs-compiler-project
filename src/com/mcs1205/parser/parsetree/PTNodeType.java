@@ -1,9 +1,9 @@
-package com.mcs1205.parser.ast;
+package com.mcs1205.parser.parsetree;
 
 /**
  * Created by kasunp on 8/1/17.
  */
-public enum ASTNodeType {
+public enum PTNodeType {
     PROGRAM,
     TERMINAL,
     STATEMENT,
